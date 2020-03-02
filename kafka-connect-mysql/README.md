@@ -111,8 +111,9 @@ export CONNECT_NET="kafka-connect-mysql_default"
 # To call the API
 docker run \
     --net="${CONNECT_NET}" \
-    --rm curlimages/curl:7.68.0 -X \
-    POST -H "Content-Type: application/json" \
+    --rm curlimages/curl:7.68.0 \
+    -X POST \
+    -H "Content-Type: application/json" \
     --data '{ "name": "quickstart-jdbc-source", "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector", "tasks.max": 1, "connection.url": "jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent", "mode": "incrementing", "incrementing.column.name": "id", "timestamp.column.name": "modified", "topic.prefix": "quickstart-jdbc-", "poll.interval.ms": 1000 } }' \
     http://connect:8083/connectors
 ```
@@ -130,8 +131,8 @@ open "http://${CONNECT_HOST}:9021/clusters"
 docker run \
     --net="${CONNECT_NET}" \
     --rm \
-    curlimages/curl:7.68.0 -s \
-    -X GET http://connect:8083/connectors/quickstart-jdbc-source/status
+    curlimages/curl:7.68.0 \
+    -s -X GET http://connect:8083/connectors/quickstart-jdbc-source/status
 
 # Check if new topic is created
 docker run \
