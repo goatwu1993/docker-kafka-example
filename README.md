@@ -1,10 +1,7 @@
-<h1 align="center">Welcome to docker-kafka-example 👋</h1>
-<p>
-</p>
+# Welcome to docker-kafka-example 👋
 
-## Show your support
+## What is this repo
 
-Give a ⭐️ if this project helped you!
+This repo is a note for learning confluent platform/kafka/docker.
 
-***
 _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_

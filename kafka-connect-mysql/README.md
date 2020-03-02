@@ -46,6 +46,11 @@ tar -xzf - -C /tmp/quickstart/jars \
 mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar
 ```
 
+```bash
+root@confluent:/home/docker# ls -la /tmp/quickstart/jars/
+-rw-r--r--    1 root     root       2356711 Dec  4 11:44 /tmp/quickstart/jars/mysql-connector-java-8.0.19.jar
+```
+
 MySQL-JDBC can be found here
 
 - [MySQL Engineering Blogs](https://dev.mysql.com/downloads/connector/j/)
@@ -177,11 +182,16 @@ docker run \
 
 Error messege
 
-```bash
-No suitable driver found for jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent for configuration Couldn't open connection to jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent
+```json
+{
+  "error_code": 400,
+  "message": "Connector configuration is invalid and contains the following 2 error(s):\nInvalid value java.sql.SQLException: No suitable driver found for jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent for configuration Couldn't open connection to jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent\nInvalid value java.sql.SQLException: No suitable driver found for jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent for configuration Couldn't open connection to jdbc:mysql://quickstart-mysql:3306/connect_test?user=root&password=confluent\nYou can also find the above list of errors at the endpoint `/{connectorType}/config/validate`"
+}
 ```
 
-Uncomment the CONNECT_LOG4J_ROOT_LOGLEVEL in docker-compose connect container.
+[Explaination](https://www.confluent.io/blog/kafka-connect-deep-dive-jdbc-source-connector/#no-suitable-driver-found)
+
+Uncomment the CONNECT_LOG4J_ROOT_LOGLEVEL in docker-compose connect container to check if mysql-jdbc is correctly loaded.
 
 ```bash
 CONNECT_LOG4J_ROOT_LOGLEVEL: "DEBUG"
@@ -189,7 +199,7 @@ CONNECT_LOG4J_ROOT_LOGLEVEL: "DEBUG"
 
 ```bash
 # restart docker-compose
-docker stop $(docker ps -a -q) ; docker rm $(docker ps -a -q) ; docker-compose up -d
+docker-compose stop ; docker-compose up -d
 
 # check the logs
 docker logs -f connect | grep -i "mysql"

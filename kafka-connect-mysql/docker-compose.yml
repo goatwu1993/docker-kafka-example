@@ -58,7 +58,7 @@ services:
     ports:
       - "8083:8083"
     volumes:
-      - /tmp/quickstart/jars/mysql-connector-java-8.0.19.jar:/usr/share/java/kafka-connect-jdbc/mysql-connector-java-8.0.19.jar
+      - /tmp/quickstart/jars:/etc/kafka-connect/jars
       - /tmp/quickstart/file:/tmp/quickstart
     environment:
       CONNECT_BOOTSTRAP_SERVERS: "broker:29092"
@@ -82,8 +82,7 @@ services:
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.4.0.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
-      
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/etc/kafka-connect/jars"
       #CONNECT_LOG4J_ROOT_LOGLEVEL: "DEBUG"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
