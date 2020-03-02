@@ -82,7 +82,12 @@ services:
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.4.0.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/etc/kafka-connect/jars"
+      #CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_PLUGIN_PATH: "\
+        /usr/share/java/kafka,\
+        /usr/share/confluent-hub-components,\
+        /usr/share/java/kafka-connect-jdbc,\
+        /etc/kafka-connect/jars"
       #CONNECT_LOG4J_ROOT_LOGLEVEL: "DEBUG"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
@@ -95,7 +100,7 @@ services:
       - broker
       - schema-registry
       - connect
-      - ksql-server
+      #- ksql-server
     ports:
       - "9021:9021"
     environment:
@@ -111,75 +116,75 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
 
-  ksql-server:
-    image: confluentinc/cp-ksql-server:5.4.0
-    hostname: ksql-server
-    container_name: ksql-server
-    depends_on:
-      - broker
-      - connect
-    ports:
-      - "8088:8088"
-    environment:
-      KSQL_CONFIG_DIR: "/etc/ksql"
-      KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
-      KSQL_BOOTSTRAP_SERVERS: "broker:29092"
-      KSQL_HOST_NAME: ksql-server
-      KSQL_LISTENERS: "http://0.0.0.0:8088"
-      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
-      KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+  # ksql-server:
+  #   image: confluentinc/cp-ksql-server:5.4.0
+  #   hostname: ksql-server
+  #   container_name: ksql-server
+  #   depends_on:
+  #     - broker
+  #     - connect
+  #   ports:
+  #     - "8088:8088"
+  #   environment:
+  #     KSQL_CONFIG_DIR: "/etc/ksql"
+  #     KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
+  #     KSQL_BOOTSTRAP_SERVERS: "broker:29092"
+  #     KSQL_HOST_NAME: ksql-server
+  #     KSQL_LISTENERS: "http://0.0.0.0:8088"
+  #     KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+  #     KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+  #     KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+  #     KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
 
-  ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.4.0
-    container_name: ksql-cli
-    depends_on:
-      - broker
-      - connect
-      - ksql-server
-    entrypoint: /bin/sh
-    tty: true
+  # ksql-cli:
+  #   image: confluentinc/cp-ksql-cli:5.4.0
+  #   container_name: ksql-cli
+  #   depends_on:
+  #     - broker
+  #     - connect
+  #     - ksql-server
+  #   entrypoint: /bin/sh
+  #   tty: true
 
-  ksql-datagen:
-    # Downrev ksql-examples to 5.1.2 due to DEVX-798 (work around issues in 5.2.0)
-    image: confluentinc/ksql-examples:5.4.0
-    hostname: ksql-datagen
-    container_name: ksql-datagen
-    depends_on:
-      - ksql-server
-      - broker
-      - schema-registry
-      - connect
-    command: "bash -c 'echo Waiting for Kafka to be ready... && \
-      cub kafka-ready -b broker:29092 1 40 && \
-      echo Waiting for Confluent Schema Registry to be ready... && \
-      cub sr-ready schema-registry 8081 40 && \
-      echo Waiting a few seconds for topic creation to finish... && \
-      sleep 11 && \
-      tail -f /dev/null'"
-    environment:
-      KSQL_CONFIG_DIR: "/etc/ksql"
-      KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
-      STREAMS_BOOTSTRAP_SERVERS: broker:29092
-      STREAMS_SCHEMA_REGISTRY_HOST: schema-registry
-      STREAMS_SCHEMA_REGISTRY_PORT: 8081
+  # ksql-datagen:
+  #   # Downrev ksql-examples to 5.1.2 due to DEVX-798 (work around issues in 5.2.0)
+  #   image: confluentinc/ksql-examples:5.4.0
+  #   hostname: ksql-datagen
+  #   container_name: ksql-datagen
+  #   depends_on:
+  #     - ksql-server
+  #     - broker
+  #     - schema-registry
+  #     - connect
+  #   command: "bash -c 'echo Waiting for Kafka to be ready... && \
+  #     cub kafka-ready -b broker:29092 1 40 && \
+  #     echo Waiting for Confluent Schema Registry to be ready... && \
+  #     cub sr-ready schema-registry 8081 40 && \
+  #     echo Waiting a few seconds for topic creation to finish... && \
+  #     sleep 11 && \
+  #     tail -f /dev/null'"
+  #   environment:
+  #     KSQL_CONFIG_DIR: "/etc/ksql"
+  #     KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
+  #     STREAMS_BOOTSTRAP_SERVERS: broker:29092
+  #     STREAMS_SCHEMA_REGISTRY_HOST: schema-registry
+  #     STREAMS_SCHEMA_REGISTRY_PORT: 8081
 
-  rest-proxy:
-    image: confluentinc/cp-kafka-rest:5.4.0
-    depends_on:
-      - zookeeper
-      - broker
-      - schema-registry
-    ports:
-      - 8082:8082
-    hostname: rest-proxy
-    container_name: rest-proxy
-    environment:
-      KAFKA_REST_HOST_NAME: rest-proxy
-      KAFKA_REST_BOOTSTRAP_SERVERS: "broker:29092"
-      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
-      KAFKA_REST_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+  # rest-proxy:
+  #   image: confluentinc/cp-kafka-rest:5.4.0
+  #   depends_on:
+  #     - zookeeper
+  #     - broker
+  #     - schema-registry
+  #   ports:
+  #     - 8082:8082
+  #   hostname: rest-proxy
+  #   container_name: rest-proxy
+  #   environment:
+  #     KAFKA_REST_HOST_NAME: rest-proxy
+  #     KAFKA_REST_BOOTSTRAP_SERVERS: "broker:29092"
+  #     KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+  #     KAFKA_REST_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
 
   quickstart-mysql:
     image: mysql:8.0.19

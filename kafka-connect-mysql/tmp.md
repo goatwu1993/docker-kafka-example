@@ -108,7 +108,7 @@ export CONNECT_NET="kafka-connect-mysql_default"
 ```
 
 ```bash
-# To call the API
+# Call the API of connect
 docker run \
     --net="${CONNECT_NET}" \
     --rm curlimages/curl:7.68.0 \
@@ -119,7 +119,7 @@ docker run \
 ```
 
 ```bash
-# To open Confluent Platform web UI:
+# Open Confluent Platform web UI:
 docker-machine >/dev/null 2>&1 && export CONNECT_HOST=$(docker-machine ip confluent) || export CONNECT_HOST="localhost"
 open "http://${CONNECT_HOST}:9021/clusters"
 ```
@@ -140,7 +140,8 @@ docker run \
     --rm \
     confluentinc/cp-kafka:5.4.0 \
     kafka-topics --describe \
-    --zookeeper zookeeper:2181
+    --zookeeper zookeeper:2181 \
+    --topic quickstart-jdbc-test
 
 # Consume through kafka-avro-console-consumer
 docker exec schema-registry \
@@ -157,8 +158,7 @@ docker exec schema-registry \
 ### Add sink connector
 
 ```bash
-# To call the API
-docker run \
+# Call the API of connect docker run \
     --net="${CONNECT_NET}" \
     --rm \
     curlimages/curl:7.68.0 \
@@ -224,3 +224,4 @@ Should see the data from MySQL
 - <https://docs.confluent.io/5.0.0/installation/docker/docs/installation/connect-avro-jdbc.html>
 - <https://www.confluent.io/blog/kafka-connect-deep-dive-jdbc-source-connector/#no-suitable-driver-found>
 - <https://rmoff.net/post/kafka-connect-change-log-level-and-write-log-to-file/>
+- <https://stackoverflow.com/questions/25503412/how-do-i-know-when-my-docker-mysql-container-is-up-and-mysql-is-ready-for-taking>
