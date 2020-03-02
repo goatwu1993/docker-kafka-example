@@ -400,8 +400,3 @@ docker-compose stop
 - <https://www.confluent.io/blog/kafka-connect-deep-dive-jdbc-source-connector/#no-suitable-driver-found>
 - <https://rmoff.net/post/kafka-connect-change-log-level-and-write-log-to-file/>
 - <https://stackoverflow.com/questions/25503412/how-do-i-know-when-my-docker-mysql-container-is-up-and-mysql-is-ready-for-taking>
-
-
-```bash
-
-```
