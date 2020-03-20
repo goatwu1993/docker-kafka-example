@@ -128,3 +128,5 @@ dmypy.json
 
 *.jar
 kafka-connect-mysql-mongodb/*
+kafka-tweety/twitter_config.py
+.vscode/*

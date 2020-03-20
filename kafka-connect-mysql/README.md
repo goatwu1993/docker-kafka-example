@@ -7,6 +7,8 @@ Confluent platform docker version 5.4.0 + MySQL version 8.0.19
 - [Kafka Connect with MySQL](#kafka-connect-with-mysql)
   - [Table of content](#table-of-content)
   - [Prerequisites](#prerequisites)
+  - [Install](#install)
+  - [Run](#run)
   - [Debug](#debug)
   - [Results](#results)
   - [References](#references)
@@ -15,15 +17,22 @@ Confluent platform docker version 5.4.0 + MySQL version 8.0.19
 
 - Docker + Docker Compose
 - curl
-- MySQL-JDBC: Make sure the MySQL-JDBC & MySQL is version-compatible.
+
+## Install
+
+MySQL-JDBC (MySQL-JDBC & MySQL should be **version-compatible**)
+
+```bash
+## Download JDBC
+chmod 755 curl_jdbc.sh
+./curl_jdbc.sh
+```
+
+## Run
 
 ```bash
 # Enter this directory
 export CONNECT_NET="kafka-connect-mysql_default"
-
-## Download JDBC
-chmod 755 curl_jdbc.sh
-./curl_jdbc.sh
 
 ## Start containers
 docker-compose up --build
@@ -39,7 +48,6 @@ docker run --net="${CONNECT_NET}" --rm curlimages/curl:7.68.0 -s -X POST -H "Con
 
 # Results 2
 docker exec connect cat /tmp/quickstart/jdbc-output.txt
-
 ```
 
 ## Debug
