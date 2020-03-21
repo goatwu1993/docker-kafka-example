@@ -34,7 +34,7 @@ class TweetKafkaProducer(StreamListener):
         self.producer.produce(
             topic='tweepy-test',
             key=None,
-            value=str(json_value).encode('utf-8')
+            value=json_value.encode('utf-8')
         )
         return True
 
@@ -46,12 +46,9 @@ class TweetKafkaProducer(StreamListener):
         json_tweet_important = {
             k: json_tweet[k] for k in self.value_fields
         }
-        json_tweet_important['text'] = \
-            json_tweet_important['text'].\
-            replace("'", "").\
-            replace("\"", "").\
-            replace("\n", "")
-        return json_tweet_important
+        # dump dict to valid json string using json.dumps
+        rs_str = json.dumps(json_tweet_important)
+        return rs_str
 
 
 def delivery_report(err, msg):
@@ -79,7 +76,7 @@ if __name__ == "__main__":
 
     # TweetKafkaProducer Settings
     # value_fields should match value_schema_str
-    # TODO: value_fields is nasty transformed from value_schema and only work in this case
+    # TODO: value_fields is nastily transformed from value_schema and only work in this case
 
     my_tweet_producer = TweetKafkaProducer(
         producer=my_producer,

@@ -12,11 +12,28 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
+import pyspark.sql.functions as psf
+from pyspark.sql.types import StructType, StructField, StringType, DateType, IntegerType, BooleanType, LongType
+
 import json
+
+import os
 
 if __name__ == "__main__":
 
-        # Create Spark Context to Connect Spark Cluster
+    os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.4 pyspark-shell'
+
+    schema = StructType().\
+        add("created_at", StringType()).\
+        add("id", LongType()).\
+        add("id_str", StringType()).\
+        add("text", StringType()).\
+        add("retweet_count", IntegerType()).\
+        add("favorite_count", IntegerType()).\
+        add("favorited", BooleanType()).\
+        add("retweeted", BooleanType()).\
+        add("lang", StringType())
+
     spark = SparkSession \
         .builder \
         .appName("My-App") \
@@ -27,33 +44,19 @@ if __name__ == "__main__":
         .format("kafka") \
         .option("kafka.bootstrap.servers", "localhost:9092") \
         .option("subscribe", "tweepy-test") \
-        .load() \
-        .select(
-            from_avro($"key", "t-key", schemaRegistryURL).as("key"),
-            from_avro($"value", "t-value", schemaRegistryURL).as("value"))
+        .load()
 
-    # .option("startingOffsets", """{"subscribe":{"0":23,"1":-2},"topic2":{"0":-2}}""") \
 
-    # Set the Batch Interval is 10 sec of Streaming Context
-    #ssc = StreamingContext(sc, 10)
+    df_rs = df.\
+        selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)").\
+        select(psf.col("key").cast("string"), psf.from_json(
+            psf.col("value").cast("string"), schema).alias("data"))
 
-    # Create Kafka Stream to Consume Data Comes From Twitter Topic
-    # localhost:2181 = Default Zookeeper Consumer Address
-    # kafkaStream = KafkaUtils.createStream(
-    #    ssc, zkQuorum='localhost:2181', groupId='spark-streaming', topics={'tweepy-test': 1})
+    df_rs.printSchema()
+    df_flattened = df_rs.selectExpr("key", "data.*")
 
-    # kafkaDStream = KafkaUtils.createDirectStream(
-    #     ssc, ['tweepy-test'], {"metadata.broker.list": "localhost:9092"})
-    # # Parse Twitter Data as json
-    # parsed = kafkaDStream.map(lambda v: json.loads(v[1]))
+    df_flattened.writeStream.\
+        format("console").\
+        start()
 
-    # # Count the number of tweets per User
-    # user_counts = parsed.map(lambda tweet: (
-    #     tweet['user']["screen_name"], 1)).reduceByKey(lambda x, y: x + y)
-
-    # # Print the User tweet counts
-    # user_counts.pprint()
-
-    # # Start Execution of Streams
-    # ssc.start()
-    # ssc.awaitTermination()
+    spark.streams.awaitAnyTermination()

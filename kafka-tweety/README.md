@@ -1,14 +1,14 @@
-# Kafka Connect with MySQL
+# Kafka Integrate with Spark Structured Streaming using Python
 
 Confluent platform docker version 5.4.0.
 
 ## Table of content
 
-- [Kafka Connect with MySQL](#kafka-connect-with-mysql)
+- [Kafka Integrate with Spark Structured Streaming using Python](#kafka-integrate-with-spark-structured-streaming-using-python)
   - [Table of content](#table-of-content)
   - [Prerequisites](#prerequisites)
-  - [Install](#install)
-  - [RUN](#run)
+  - [Environment](#environment)
+  - [Run](#run)
     - [Plaintext Producer + Consumer (without schema-registry)](#plaintext-producer--consumer-without-schema-registry)
     - [Avro Producer + Consumer (with schema-registry)](#avro-producer--consumer-with-schema-registry)
   - [References](#references)
@@ -16,16 +16,21 @@ Confluent platform docker version 5.4.0.
 ## Prerequisites
 
 - Docker + Docker Compose
-- tweepy
+- Python Package
+  - Producer
+    - confluent-kafka-python
+    - tweepy
+  - Consumer
+    - pyspark
 
-## Install
+## Environment
 
 ```bash
 # Start Kafka cluster
 docker-compose up -d
 ```
 
-## RUN
+## Run
 
 ### Plaintext Producer + Consumer (without schema-registry)
 
@@ -34,7 +39,7 @@ docker-compose up -d
 python tweet-producer.py
 
 # Start pyspark stream processor
-PYSPARK_PYTHON=python3 spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0 kafka-pyspark.py
+python kafka-pyspark.py
 ```
 
 ### Avro Producer + Consumer (with schema-registry)
@@ -53,3 +58,6 @@ docker exec schema-registry kafka-avro-console-consumer --bootstrap-server broke
 ## References
 
 - <https://github.com/kaantas/kafka-twitter-spark-streaming/blob/master/kafka_push_listener.py>
+- <https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html>
+- <https://stackoverflow.com/questions/54701460/how-to-parse-a-json-string-column-in-pysparks-datastreamreader-and-create-a-dat>
+- <https://codertw.com/程式語言/356804/>
