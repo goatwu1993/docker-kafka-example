@@ -1,7 +1,6 @@
 from confluent_kafka.avro import AvroProducer
 from confluent_kafka import avro
-from tweepy import OAuthHandler
-from tweepy import Stream
+from tweepy import OAuthHandler, Stream
 from tweepy.streaming import StreamListener
 import twitter_config
 import twitter_schema
@@ -21,10 +20,10 @@ class TweetAvroProducer(StreamListener):
     def __init__(self,
                  api=None,
                  producer: AvroProducer = None,
-                 value_fields: list = []):
+                 value_filters: list = []):
         super().__init__(api=api)
         self.producer: AvroProducer = producer
-        self.value_fields: list = value_fields
+        self.value_filters: list = value_filters
 
     def on_data(self, data):
         if (self.producer == None):
@@ -34,7 +33,7 @@ class TweetAvroProducer(StreamListener):
         self.producer.poll(0)
         self.producer.produce(
             topic='tweepy-avro-test',
-            key={"name": "Key"},
+            key=None,
             value=json_value
         )
         return True
@@ -43,16 +42,8 @@ class TweetAvroProducer(StreamListener):
         print(status)
 
     def value_transformer(self, data):
-        json_tweet = json.loads(data)
-        json_tweet_important = {
-            k: json_tweet[k] for k in self.value_fields
-        }
-        json_tweet_important['text'] = \
-            json_tweet_important['text'].\
-            replace("'", "").\
-            replace("\"", "").\
-            replace("\n", "")
-        return json_tweet_important
+        data_json = json.loads(data)
+        return {k: data_json[k] for k in self.value_filters}
 
 
 def delivery_report(err, msg):
@@ -82,13 +73,12 @@ if __name__ == "__main__":
         default_key_schema=key_schema,
         default_value_schema=value_schema)
 
-    # TweetAvroProducer Settings
     # value_fields should match value_schema_str
     # TODO: value_fields is nasty transformed from value_schema and only work in this case
 
     my_tweet_producer = TweetAvroProducer(
         producer=my_avro_producer,
-        value_fields=[x['name'] for x in value_schema.to_json()["fields"]]
+        value_filters=[x['name'] for x in value_schema.to_json()["fields"]]
     )
     # Handles Twitter authetification and the connection to Twitter Streaming API
     stream = Stream(auth,  my_tweet_producer)

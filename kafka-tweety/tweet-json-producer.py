@@ -1,6 +1,5 @@
 from confluent_kafka import Producer, avro
-from tweepy import OAuthHandler
-from tweepy import Stream
+from tweepy import OAuthHandler, Stream
 from tweepy.streaming import StreamListener
 import twitter_config
 import twitter_schema
@@ -20,10 +19,10 @@ class TweetKafkaProducer(StreamListener):
     def __init__(self,
                  api=None,
                  producer: Producer = None,
-                 value_fields: list = []):
+                 value_filters: list = []):
         super().__init__(api=api)
         self.producer: Producer = producer
-        self.value_fields: list = value_fields
+        self.value_filters: list = value_filters
 
     def on_data(self, data):
         if (self.producer == None):
@@ -32,7 +31,7 @@ class TweetKafkaProducer(StreamListener):
         print(json_value)
         self.producer.poll(0)
         self.producer.produce(
-            topic='tweepy-test',
+            topic='tweepy-json-test',
             key=None,
             value=json_value.encode('utf-8')
         )
@@ -42,13 +41,10 @@ class TweetKafkaProducer(StreamListener):
         print(status)
 
     def value_transformer(self, data):
-        json_tweet = json.loads(data)
-        json_tweet_important = {
-            k: json_tweet[k] for k in self.value_fields
-        }
+        data_json = json.loads(data)
+        data_filtered_dict = {k: data_json[k] for k in self.value_filters}
         # dump dict to valid json string using json.dumps
-        rs_str = json.dumps(json_tweet_important)
-        return rs_str
+        return json.dumps(data_filtered_dict)
 
 
 def delivery_report(err, msg):
@@ -68,21 +64,15 @@ if __name__ == "__main__":
     bootstrap_servers: str = "localhost:9092"
     value_schema = avro.loads(twitter_schema.value_schema_str)
 
-    # Init a AvroProducer for TweetKafkaProducer
-    my_producer = Producer({
-        'bootstrap.servers': bootstrap_servers,
-        'on_delivery': delivery_report
-    })
-
-    # TweetKafkaProducer Settings
     # value_fields should match value_schema_str
     # TODO: value_fields is nastily transformed from value_schema and only work in this case
 
-    my_tweet_producer = TweetKafkaProducer(
-        producer=my_producer,
-        value_fields=[x['name'] for x in value_schema.to_json()["fields"]]
+    my_json_producer = TweetKafkaProducer(
+        producer=Producer(
+            {'bootstrap.servers': bootstrap_servers, 'on_delivery': delivery_report}),
+        value_filters=[x['name'] for x in value_schema.to_json()["fields"]]
     )
     # Handles Twitter authetification and the connection to Twitter Streaming API
-    stream = Stream(auth,  my_tweet_producer)
+    stream = Stream(auth,  my_json_producer)
     tracklist = ['#conovirus', '#COVID-19']
     stream.filter(track=tracklist)

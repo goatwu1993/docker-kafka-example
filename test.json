@@ -1,0 +1,33 @@
+{
+    "type": "record",
+    "name": "MyClass",
+    "namespace": "com.acme.avro",
+    "fields": [{
+        "name": "created_at",
+        "type": "string"
+    }, {
+        "name": "id",
+        "type": "long"
+    }, {
+        "name": "id_str",
+        "type": "string"
+    }, {
+        "name": "text",
+        "type": "string"
+    }, {
+        "name": "retweet_count",
+        "type": "int"
+    }, {
+        "name": "favorite_count",
+        "type": "int"
+    }, {
+        "name": "favorited",
+        "type": "boolean"
+    }, {
+        "name": "retweeted",
+        "type": "boolean"
+    }, {
+        "name": "lang",
+        "type": "string"
+    }]
+}

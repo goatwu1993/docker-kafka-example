@@ -10,19 +10,17 @@ PYSPARK_PYTHON=python3 bin/spark-submit --packages org.apache.spark:spark-stream
 
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
-from pyspark.streaming import StreamingContext
-from pyspark.streaming.kafka import KafkaUtils
-import pyspark.sql.functions as psf
 from pyspark.sql.types import StructType, StructField, StringType, DateType, IntegerType, BooleanType, LongType
-
-import json
-
+import pyspark.sql.functions as psf
 import os
 
 if __name__ == "__main__":
 
-    os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.4 pyspark-shell'
+    os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages ' \
+        'org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.4 ' \
+        'pyspark-shell'
 
+    # Schema should match json
     schema = StructType().\
         add("created_at", StringType()).\
         add("id", LongType()).\
@@ -43,20 +41,17 @@ if __name__ == "__main__":
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "localhost:9092") \
-        .option("subscribe", "tweepy-test") \
+        .option("subscribe", "tweepy-json-test") \
         .load()
-
 
     df_rs = df.\
         selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)").\
         select(psf.col("key").cast("string"), psf.from_json(
             psf.col("value").cast("string"), schema).alias("data"))
 
+    # Flatten
+    df_rs = df_rs.selectExpr("key", "data.*")
+
     df_rs.printSchema()
-    df_flattened = df_rs.selectExpr("key", "data.*")
-
-    df_flattened.writeStream.\
-        format("console").\
-        start()
-
+    df_rs.writeStream.format("console").start()
     spark.streams.awaitAnyTermination()
